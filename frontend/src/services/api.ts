@@ -3,8 +3,11 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : '/api',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 })
 
 // Injeta token JWT em todas as requisições

@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import PwaInstallPrompt from '@/components/ui/PwaInstallPrompt'
 import { useAuthStore } from '@/stores/authStore'
 import AppLayout from '@/components/layout/AppLayout'
 
@@ -30,6 +31,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <PwaInstallPrompt />
       <Routes>
         {/* Rota pública de orçamento */}
         <Route path="/orcamento/:token" element={<QuotePublicPage />} />

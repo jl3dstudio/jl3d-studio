@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="80" fill="#0D1117"/>
+  <!-- Base da impressora -->
+  <rect x="96" y="320" width="320" height="48" rx="12" fill="#2563EB"/>
+  <!-- Mesa de impressão -->
+  <rect x="128" y="296" width="256" height="28" rx="6" fill="#1E3A5F"/>
+  <!-- Corpo/portal -->
+  <rect x="144" y="160" width="224" height="140" rx="8" fill="#141923" stroke="#2563EB" stroke-width="4"/>
+  <!-- Cabeçote de impressão -->
+  <rect x="200" y="196" width="112" height="28" rx="6" fill="#3B82F6"/>
+  <!-- Bico extrusor -->
+  <rect x="248" y="224" width="16" height="36" rx="4" fill="#22D3EE"/>
+  <!-- Filamento saindo -->
+  <path d="M256 260 Q256 280 256 296" stroke="#22D3EE" stroke-width="3" stroke-dasharray="4 3"/>
+  <!-- Trilho horizontal -->
+  <rect x="152" y="192" width="208" height="6" rx="3" fill="#2A3347"/>
+  <!-- Colunas laterais -->
+  <rect x="144" y="160" width="12" height="140" rx="4" fill="#1C2333"/>
+  <rect x="356" y="160" width="12" height="140" rx="4" fill="#1C2333"/>
+  <!-- Topo/frame superior -->
+  <rect x="144" y="152" width="224" height="14" rx="6" fill="#2563EB"/>
+  <!-- Texto JL3D pequeno -->
+  <text x="256" y="428" font-family="Inter, sans-serif" font-size="48" font-weight="700" fill="#F1F5F9" text-anchor="middle" letter-spacing="-1">JL3D</text>
+</svg>

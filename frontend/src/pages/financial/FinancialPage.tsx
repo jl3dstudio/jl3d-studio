@@ -37,7 +37,7 @@ export default function FinancialPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="card">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} className="text-success" />

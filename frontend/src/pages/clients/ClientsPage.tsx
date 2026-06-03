@@ -34,6 +34,7 @@ export default function ClientsPage() {
       </div>
 
       <div className="card p-0 overflow-hidden">
+        <div className="table-responsive">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
@@ -91,6 +92,7 @@ export default function ClientsPage() {
             ))}
           </tbody>
         </table>
+        </div>
         {!isLoading && clients.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Users size={40} className="text-text-muted mb-3" />

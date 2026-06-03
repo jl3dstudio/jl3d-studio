@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
         <p className="text-sm text-text-muted mt-0.5">Métricas e relatórios do negócio</p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Receita mensal */}
         <div className="card">
           <p className="text-sm font-semibold text-text-primary mb-4">Receita mensal (R$)</p>

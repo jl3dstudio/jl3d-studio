@@ -111,6 +111,16 @@
 }
 
 @layer utilities {
+  .table-responsive {
+    @apply w-full overflow-x-auto;
+  }
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+  .grid-responsive-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+
   .text-gradient {
     @apply bg-gradient-to-r from-brand-400 to-cyan-400 bg-clip-text text-transparent;
   }

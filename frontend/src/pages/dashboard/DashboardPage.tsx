@@ -95,7 +95,7 @@ export default function DashboardPage() {
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-7">
         <KpiCard
           label="Receita do mês"
           value={formatCurrency(kpis.monthRevenue)}
@@ -132,7 +132,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
         {/* Receita 6 meses */}
         <div className="xl:col-span-2 card">
           <p className="text-sm font-semibold text-text-primary mb-4">Receita — últimos 6 meses</p>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Top produtos */}
         <div className="card">
           <p className="text-sm font-semibold text-text-primary mb-4">Top 5 produtos</p>
