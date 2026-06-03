@@ -1,0 +1,431 @@
+// JL3D Studio — Schema do Banco de Dados
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// USUÁRIOS E EMPRESA
+// ─────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         UserRole @default(OPERATOR)
+  avatarUrl    String?  @map("avatar_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  company      Company?
+  quotes       Quote[]
+  orders       Order[]
+  auditLogs    AuditLog[]
+  orderHistory OrderStatusHistory[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  name      String
+  logoUrl   String?  @map("logo_url")
+  slogan    String?
+  cnpj      String?
+  address   String?
+  phone     String?
+  whatsapp  String?
+  email     String?
+  website   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("companies")
+}
+
+// ─────────────────────────────────────────────
+// IMPRESSORAS
+// ─────────────────────────────────────────────
+
+model Printer {
+  id              String   @id @default(uuid())
+  name            String
+  model           String?
+  powerWatts      Float    @map("power_watts")      // Potência em W
+  purchaseValue   Float    @map("purchase_value")   // Valor de compra em R$
+  usefulLifeHours Float    @map("useful_life_hours") // Vida útil estimada em horas
+  totalHoursUsed  Float    @default(0) @map("total_hours_used")
+  isActive        Boolean  @default(true) @map("is_active")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  orderItems OrderItem[]
+
+  @@map("printers")
+}
+
+// ─────────────────────────────────────────────
+// CONFIGURAÇÕES DO SISTEMA
+// ─────────────────────────────────────────────
+
+model Settings {
+  id            String   @id @default(uuid())
+  key           String   @unique
+  value         String
+  description   String?
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// ─────────────────────────────────────────────
+// FILAMENTOS E ESTOQUE
+// ─────────────────────────────────────────────
+
+model Filament {
+  id              String       @id @default(uuid())
+  name            String
+  type            FilamentType
+  brand           String?
+  colorName       String       @map("color_name")
+  colorHex        String       @map("color_hex")        // Ex: "#FF5733"
+  spoolWeightG    Float        @map("spool_weight_g")   // Peso total do carretel em gramas
+  pricePaid       Float        @map("price_paid")       // Preço pago pelo carretel (R$)
+  purchaseDate    DateTime?    @map("purchase_date")
+  currentWeightG  Float        @map("current_weight_g") // Peso restante estimado
+  minStockG       Float        @default(100) @map("min_stock_g") // Alerta de estoque mínimo
+  tags            String[]     @default([])
+  notes           String?
+  isActive        Boolean      @default(true) @map("is_active")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  entries     FilamentEntry[]
+  products    Product[]
+  orderItems  OrderItem[]
+
+  @@map("filaments")
+}
+
+enum FilamentType {
+  PLA
+  PETG
+  ABS
+  TPU
+  ASA
+  NYLON
+  RESIN
+  OTHER
+}
+
+// Registro de entradas de estoque (compras de novos carretéis)
+model FilamentEntry {
+  id          String   @id @default(uuid())
+  filamentId  String   @map("filament_id")
+  weightG     Float    @map("weight_g")    // Gramas adicionadas
+  pricePaid   Float    @map("price_paid")  // R$ pago nesta compra
+  purchaseDate DateTime @map("purchase_date")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  filament Filament @relation(fields: [filamentId], references: [id], onDelete: Cascade)
+
+  @@map("filament_entries")
+}
+
+// ─────────────────────────────────────────────
+// CATÁLOGO DE PRODUTOS
+// ─────────────────────────────────────────────
+
+model Product {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  emoji           String?  @default("🖨️")
+  filamentId      String?  @map("filament_id")
+  weightG         Float    @map("weight_g")           // Peso médio de impressão
+  printTimeMin    Int      @map("print_time_min")     // Tempo de impressão em minutos
+  laborTimeMin    Int      @default(0) @map("labor_time_min") // Tempo de mão de obra em minutos
+  postProcessCost Float    @default(0) @map("post_process_cost") // Custo de pós-processo R$
+  baseCost        Float    @map("base_cost")           // Custo calculado total
+  suggestedPrice  Float    @map("suggested_price")     // Preço sugerido com margem
+  marginPercent   Float    @map("margin_percent")      // Margem de lucro em %
+  tags            String[] @default([])
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  filament   Filament?   @relation(fields: [filamentId], references: [id], onDelete: SetNull)
+  quoteItems QuoteItem[]
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+// ─────────────────────────────────────────────
+// CLIENTES
+// ─────────────────────────────────────────────
+
+model Client {
+  id        String     @id @default(uuid())
+  name      String
+  type      ClientType @default(PERSON)
+  whatsapp  String?
+  email     String?
+  address   String?
+  document  String?    // CPF ou CNPJ
+  tags      String[]   @default([])
+  notes     String?
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  quotes  Quote[]
+  orders  Order[]
+
+  @@map("clients")
+}
+
+enum ClientType {
+  PERSON
+  RETAILER
+  COMPANY
+}
+
+// ─────────────────────────────────────────────
+// ORÇAMENTOS
+// ─────────────────────────────────────────────
+
+model Quote {
+  id             String      @id @default(uuid())
+  number         String      @unique // ORC-0001
+  clientId       String      @map("client_id")
+  userId         String      @map("user_id")
+  status         QuoteStatus @default(DRAFT)
+  discountType   DiscountType? @map("discount_type")
+  discountValue  Float       @default(0) @map("discount_value")
+  paymentMethod  String?     @map("payment_method")
+  validUntil     DateTime?   @map("valid_until")
+  notes          String?
+  publicToken    String?     @unique @map("public_token") // token para link público
+  subtotal       Float       @default(0)
+  total          Float       @default(0)
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  client  Client      @relation(fields: [clientId], references: [id])
+  user    User        @relation(fields: [userId], references: [id])
+  items   QuoteItem[]
+  order   Order?
+
+  @@map("quotes")
+}
+
+enum QuoteStatus {
+  DRAFT      // Rascunho
+  SENT       // Enviado
+  APPROVED   // Aprovado
+  REJECTED   // Recusado
+  EXPIRED    // Expirado
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+model QuoteItem {
+  id          String  @id @default(uuid())
+  quoteId     String  @map("quote_id")
+  productId   String? @map("product_id")
+  name        String  // Nome do item (pode ser avulso)
+  description String?
+  quantity    Int     @default(1)
+  unitPrice   Float   @map("unit_price")
+  totalPrice  Float   @map("total_price")
+
+  quote   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@map("quote_items")
+}
+
+// ─────────────────────────────────────────────
+// PEDIDOS (PRODUÇÃO)
+// ─────────────────────────────────────────────
+
+model Order {
+  id               String      @id @default(uuid())
+  number           String      @unique // PED-0001
+  clientId         String      @map("client_id")
+  userId           String      @map("user_id")
+  quoteId          String?     @unique @map("quote_id")
+  status           OrderStatus @default(PENDING)
+  estimatedDelivery DateTime?  @map("estimated_delivery")
+  deliveredAt      DateTime?   @map("delivered_at")
+  productionNotes  String?     @map("production_notes")
+  subtotal         Float       @default(0)
+  total            Float       @default(0)
+  printTimeMinReal Int?        @map("print_time_min_real") // Tempo real de impressão registrado
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  client    Client               @relation(fields: [clientId], references: [id])
+  user      User                 @relation(fields: [userId], references: [id])
+  quote     Quote?               @relation(fields: [quoteId], references: [id])
+  items     OrderItem[]
+  history   OrderStatusHistory[]
+  revenues  Revenue[]
+  files     OrderFile[]
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING      // Aguardando
+  PRINTING     // Em impressão
+  POST_PROCESS // Pós-processo
+  READY        // Pronto
+  DELIVERED    // Entregue
+  CANCELLED    // Cancelado
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String   @map("order_id")
+  productId       String?  @map("product_id")
+  printerId       String?  @map("printer_id")
+  filamentId      String?  @map("filament_id")
+  name            String
+  quantity        Int      @default(1)
+  weightG         Float?   @map("weight_g")
+  printTimeMin    Int?     @map("print_time_min")
+  unitPrice       Float    @map("unit_price")
+  totalPrice      Float    @map("total_price")
+  filamentUsedG   Float?   @map("filament_used_g") // Filamento real consumido (baixa de estoque)
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product  Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  printer  Printer?  @relation(fields: [printerId], references: [id], onDelete: SetNull)
+  filament Filament? @relation(fields: [filamentId], references: [id], onDelete: SetNull)
+
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String      @map("order_id")
+  userId    String      @map("user_id")
+  fromStatus OrderStatus? @map("from_status")
+  toStatus  OrderStatus  @map("to_status")
+  notes     String?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("order_status_history")
+}
+
+model OrderFile {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  filename  String
+  url       String
+  mimeType  String   @map("mime_type")
+  sizeBytes Int      @map("size_bytes")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_files")
+}
+
+// ─────────────────────────────────────────────
+// FINANCEIRO
+// ─────────────────────────────────────────────
+
+model Revenue {
+  id            String        @id @default(uuid())
+  orderId       String?       @map("order_id")
+  description   String
+  amount        Float
+  paymentMethod String?       @map("payment_method")
+  status        PaymentStatus @default(PENDING)
+  dueDate       DateTime?     @map("due_date")
+  paidAt        DateTime?     @map("paid_at")
+  installments  Int           @default(1)
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@map("revenues")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  category    ExpenseCategory
+  description String
+  amount      Float
+  date        DateTime
+  receiptUrl  String?         @map("receipt_url") // Nota fiscal
+  notes       String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("expenses")
+}
+
+enum PaymentStatus {
+  PENDING    // Pendente
+  RECEIVED   // Recebido
+  OVERDUE    // Atrasado
+}
+
+enum ExpenseCategory {
+  FILAMENT      // Filamento
+  ENERGY        // Energia
+  EQUIPMENT     // Equipamento
+  MAINTENANCE   // Manutenção
+  MARKETING     // Marketing
+  OTHER         // Outros
+}
+
+// ─────────────────────────────────────────────
+// AUDITORIA
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String   // Ex: "CREATE_ORDER", "UPDATE_QUOTE"
+  entity     String   // Ex: "Order", "Quote"
+  entityId   String?  @map("entity_id")
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.env.local
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/prisma/generated/
+backend/prisma/migrations/
+*.log
+.DS_Store
+coverage/
