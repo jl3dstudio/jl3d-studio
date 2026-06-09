@@ -69,9 +69,14 @@ export default function DashboardPage() {
     )
   }
 
-  if (!data) return null
-
-  const { kpis, charts, alerts, recentOrders } = data
+  // Dados vazios padrão quando API falha ou retorna vazio
+  const empty: DashboardData = {
+    kpis: { monthRevenue: 0, activeOrders: 0, profitEstimate: 0, profitPercent: 0, activeClients: 0, lowStockCount: 0 },
+    charts: { revenueByMonth: [], ordersByStatus: [], topProducts: [], materialDistribution: [] },
+    alerts: { lowStockFilaments: [] },
+    recentOrders: [],
+  }
+  const { kpis, charts, alerts, recentOrders } = data ?? empty
 
   return (
     <div className="animate-fade-in">

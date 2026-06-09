@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import api from '@/services/api'
@@ -16,13 +16,20 @@ export default function AnalyticsPage() {
   })
 
   if (isLoading) return <div className="grid grid-cols-2 gap-5"><SkeletonCard count={4} /></div>
-  if (!data) return null
+
+  const empty: DashboardData = {
+    kpis: { monthRevenue: 0, activeOrders: 0, profitEstimate: 0, profitPercent: 0, activeClients: 0, lowStockCount: 0 },
+    charts: { revenueByMonth: [], ordersByStatus: [], topProducts: [], materialDistribution: [] },
+    alerts: { lowStockFilaments: [] },
+    recentOrders: [],
+  }
+  const { charts } = data ?? empty
 
   return (
     <div className="animate-fade-in">
       <div className="mb-7">
         <h1 className="page-title">Analytics</h1>
-        <p className="text-sm text-text-muted mt-0.5">Métricas e relatórios do negócio</p>
+        <p className="text-sm text-text-muted mt-0.5">MÃ©tricas e relatÃ³rios do negÃ³cio</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -30,7 +37,7 @@ export default function AnalyticsPage() {
         <div className="card">
           <p className="text-sm font-semibold text-text-primary mb-4">Receita mensal (R$)</p>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={data.charts.revenueByMonth}>
+            <LineChart data={charts.revenueByMonth}>
               <CartesianGrid strokeDasharray="3 3" stroke="#2A3347" />
               <XAxis dataKey="month" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
@@ -44,7 +51,7 @@ export default function AnalyticsPage() {
         <div className="card">
           <p className="text-sm font-semibold text-text-primary mb-4">Receita por produto</p>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={data.charts.topProducts} layout="vertical">
+            <BarChart data={charts.topProducts} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#2A3347" horizontal={false} />
               <XAxis type="number" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrency(v)} />
               <YAxis type="category" dataKey="name" width={130} tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -56,11 +63,11 @@ export default function AnalyticsPage() {
 
         {/* Status dos pedidos */}
         <div className="card">
-          <p className="text-sm font-semibold text-text-primary mb-4">Distribuição por status</p>
+          <p className="text-sm font-semibold text-text-primary mb-4">DistribuiÃ§Ã£o por status</p>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={data.charts.ordersByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={90} paddingAngle={3}>
-                {data.charts.ordersByStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <Pie data={charts.ordersByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={90} paddingAngle={3}>
+                {charts.ordersByStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
               <Tooltip contentStyle={{ background: '#1C2333', border: '1px solid #2A3347', borderRadius: 8, fontSize: 12 }} formatter={(v, _, p) => [v, ORDER_STATUS_LABELS[p.payload.status as OrderStatus]]} />
             </PieChart>
@@ -69,11 +76,11 @@ export default function AnalyticsPage() {
 
         {/* Materiais */}
         <div className="card">
-          <p className="text-sm font-semibold text-text-primary mb-4">Distribuição de materiais</p>
+          <p className="text-sm font-semibold text-text-primary mb-4">DistribuiÃ§Ã£o de materiais</p>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={data.charts.materialDistribution} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={90} paddingAngle={3}>
-                {data.charts.materialDistribution.map((entry, i) => <Cell key={i} fill={entry.color || COLORS[i % COLORS.length]} />)}
+              <Pie data={charts.materialDistribution} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={90} paddingAngle={3}>
+                {charts.materialDistribution.map((entry, i) => <Cell key={i} fill={entry.color || COLORS[i % COLORS.length]} />)}
               </Pie>
               <Tooltip contentStyle={{ background: '#1C2333', border: '1px solid #2A3347', borderRadius: 8, fontSize: 12 }} />
               <Legend formatter={(v) => <span style={{ color: '#94A3B8', fontSize: 12 }}>{v}</span>} />
