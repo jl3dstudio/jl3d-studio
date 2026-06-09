@@ -2,22 +2,20 @@
   "installCommand": "npm install",
   "buildCommand": "bash build.sh",
   "outputDirectory": "frontend/dist",
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/index" },
-    { "source": "/health", "destination": "/api/index" },
-    { "source": "/:path*", "destination": "/index.html" }
-  ],
-  "headers": [
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index" },
+    { "src": "/health", "dest": "/api/index" },
     {
-      "source": "/manifest.webmanifest",
-      "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
+      "src": "/sw.js",
+      "headers": { "Cache-Control": "no-cache", "Service-Worker-Allowed": "/" },
+      "dest": "/sw.js"
     },
     {
-      "source": "/sw.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
-    }
+      "src": "/manifest.webmanifest",
+      "headers": { "Content-Type": "application/manifest+json" },
+      "dest": "/manifest.webmanifest"
+    },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
