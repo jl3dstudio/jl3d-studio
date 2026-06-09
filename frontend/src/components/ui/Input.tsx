@@ -38,8 +38,8 @@ export default function Input({
           id={inputId}
           className={cn(
             'input-base',
-            leftIcon && 'pl-9',
-            rightIcon && 'pr-9',
+            leftIcon ? 'pl-9' : undefined,
+            rightIcon ? 'pr-9' : undefined,
             error && 'border-danger focus:border-danger focus:ring-danger',
             className,
           )}

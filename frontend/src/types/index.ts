@@ -228,7 +228,7 @@ export interface DashboardData {
   alerts: {
     lowStockFilaments: Pick<Filament, 'id' | 'name' | 'colorHex' | 'colorName' | 'currentWeightG' | 'minStockG'>[]
   }
-  recentOrders: Pick<Order, 'id' | 'number' | 'status' | 'total' | 'createdAt'> & { client: Pick<Client, 'name'> }[]
+  recentOrders: (Pick<Order, 'id' | 'number' | 'status' | 'total' | 'createdAt'> & { client: Pick<Client, 'name'> })[]
 }
 
 export interface PaginatedResponse<T> {

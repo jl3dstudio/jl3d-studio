@@ -2,7 +2,7 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import api from '@/services/api'
-import type { DashboardData } from '@/types'
+import type { DashboardData, OrderStatus } from '@/types'
 import { formatCurrency } from '@/utils/format'
 import { ORDER_STATUS_LABELS } from '@/utils/constants'
 import { SkeletonCard } from '@/components/ui/Skeleton'
@@ -62,7 +62,7 @@ export default function AnalyticsPage() {
               <Pie data={data.charts.ordersByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={90} paddingAngle={3}>
                 {data.charts.ordersByStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
-              <Tooltip contentStyle={{ background: '#1C2333', border: '1px solid #2A3347', borderRadius: 8, fontSize: 12 }} formatter={(v, _, p) => [v, ORDER_STATUS_LABELS[p.payload.status]]} />
+              <Tooltip contentStyle={{ background: '#1C2333', border: '1px solid #2A3347', borderRadius: 8, fontSize: 12 }} formatter={(v, _, p) => [v, ORDER_STATUS_LABELS[p.payload.status as OrderStatus]]} />
             </PieChart>
           </ResponsiveContainer>
         </div>
