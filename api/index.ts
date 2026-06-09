@@ -15,6 +15,13 @@ async function getApp(): Promise<FastifyInstance> {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const app = await getApp()
-  app.server.emit('request', req, res)
+  try {
+    const app = await getApp()
+    app.server.emit('request', req, res)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    const stack = err instanceof Error ? err.stack : ''
+    console.error('[JL3D Serverless Error]', message, stack)
+    res.status(500).json({ error: message, stack })
+  }
 }
