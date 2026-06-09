@@ -47,7 +47,6 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
-        include: { client: { select: { name: true } } },
         select: {
           id: true, number: true, status: true, total: true, createdAt: true,
           client: { select: { name: true } },
