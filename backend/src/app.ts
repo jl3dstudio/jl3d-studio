@@ -25,16 +25,16 @@ import expenseRoutes from './routes/expenses'
 import dashboardRoutes from './routes/dashboard'
 import settingsRoutes from './routes/settings'
 
-const app = Fastify({
-  logger: env.NODE_ENV === 'development'
-    ? { transport: { target: 'pino-pretty', options: { colorize: true } } }
-    : true,
-})
+export async function buildApp() {
+  const app = Fastify({
+    logger: env.NODE_ENV === 'development'
+      ? { transport: { target: 'pino-pretty', options: { colorize: true } } }
+      : true,
+  })
 
-async function buildApp() {
   // CORS
   await app.register(cors, {
-    origin: env.FRONTEND_URL,
+    origin: env.FRONTEND_URL || true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
@@ -60,11 +60,13 @@ async function buildApp() {
     limits: { fileSize: env.MAX_FILE_SIZE_MB * 1024 * 1024 },
   })
 
-  // Arquivos estáticos (uploads)
-  await app.register(staticFiles, {
-    root: path.resolve(env.UPLOAD_DIR),
-    prefix: '/uploads/',
-  })
+  // Arquivos estáticos (apenas fora do serverless)
+  if (env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+    await app.register(staticFiles, {
+      root: path.resolve(env.UPLOAD_DIR),
+      prefix: '/uploads/',
+    })
+  }
 
   // Swagger — documentação da API
   await app.register(swagger, {
@@ -99,17 +101,3 @@ async function buildApp() {
 
   return app
 }
-
-async function start() {
-  try {
-    const server = await buildApp()
-    await server.listen({ port: env.PORT, host: '0.0.0.0' })
-    console.log(`🚀 JL3D Studio API rodando em http://localhost:${env.PORT}`)
-    console.log(`📖 Documentação disponível em http://localhost:${env.PORT}/docs`)
-  } catch (err) {
-    app.log.error(err)
-    process.exit(1)
-  }
-}
-
-start()
