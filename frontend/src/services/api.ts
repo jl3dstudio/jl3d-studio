@@ -15,15 +15,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Flag para evitar múltiplos redirects simultâneos
+let isRedirecting = false
+
 // Trata respostas e erros globalmente
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const status = error.response?.status
-    const message = error.response?.data?.message
+    const message = error.response?.data?.message || error.response?.data?.error
 
-    if (status === 401) {
-      // Tenta renovar o token
+    if (status === 401 && !isRedirecting) {
+      // Não tenta refresh na rota de login ou refresh
+      const url = error.config?.url || ''
+      if (url.includes('/auth/login') || url.includes('/auth/refresh')) {
+        return Promise.reject(new Error(message || 'Credenciais inválidas'))
+      }
+
       const refreshToken = localStorage.getItem('jl3d_refresh')
       if (refreshToken) {
         try {
@@ -32,11 +40,16 @@ api.interceptors.response.use(
           error.config.headers.Authorization = `Bearer ${data.data.accessToken}`
           return api.request(error.config)
         } catch {
-          localStorage.removeItem('jl3d_token')
-          localStorage.removeItem('jl3d_refresh')
-          window.location.href = '/login'
+          // refresh falhou
         }
-      } else {
+      }
+
+      // Limpa sessão e redireciona apenas uma vez
+      isRedirecting = true
+      localStorage.removeItem('jl3d_token')
+      localStorage.removeItem('jl3d_refresh')
+      setTimeout(() => { isRedirecting = false }, 3000)
+      if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login'
       }
     }
