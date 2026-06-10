@@ -159,9 +159,13 @@ const PRINTER_DB: Record<string, { model: string; powerWatts: number; purchaseVa
     { model: 'Kobra Max', powerWatts: 350, purchaseValue: 2000, usefulLifeHours: 3000 },
   ],
   'Flashforge': [
+    { model: 'AD5X', powerWatts: 350, purchaseValue: 4500, usefulLifeHours: 5000 },
     { model: 'Adventurer 5M Pro', powerWatts: 350, purchaseValue: 3000, usefulLifeHours: 4000 },
     { model: 'Adventurer 5M', powerWatts: 350, purchaseValue: 2200, usefulLifeHours: 4000 },
+    { model: 'Adventurer 4', powerWatts: 350, purchaseValue: 2800, usefulLifeHours: 4000 },
+    { model: 'Creator 4S', powerWatts: 900, purchaseValue: 9000, usefulLifeHours: 6000 },
     { model: 'Creator 3 Pro', powerWatts: 800, purchaseValue: 7000, usefulLifeHours: 5000 },
+    { model: 'Guider 3 Ultra', powerWatts: 750, purchaseValue: 12000, usefulLifeHours: 6000 },
     { model: 'Guider 3 Plus', powerWatts: 600, purchaseValue: 8000, usefulLifeHours: 6000 },
   ],
   'Prusa': [
