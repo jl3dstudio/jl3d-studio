@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
-import { Save, Printer, Building, Sliders, Users, Plus, Trash2, Eye, EyeOff } from 'lucide-react'
+import { Save, Printer, Building, Sliders, Users, Plus, Trash2, Eye, EyeOff, Pencil } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '@/services/api'
 import type { Settings, Company } from '@/types'
@@ -129,31 +129,160 @@ export default function SettingsPage() {
   )
 }
 
+// ─── Banco de dados de impressoras ───────────────────────────────────────────
+const PRINTER_DB: Record<string, { model: string; powerWatts: number; purchaseValue: number; usefulLifeHours: number }[]> = {
+  'Bambu Lab': [
+    { model: 'X1 Carbon', powerWatts: 350, purchaseValue: 6500, usefulLifeHours: 5000 },
+    { model: 'X1E', powerWatts: 350, purchaseValue: 9500, usefulLifeHours: 5000 },
+    { model: 'P1S', powerWatts: 350, purchaseValue: 4800, usefulLifeHours: 5000 },
+    { model: 'P1P', powerWatts: 280, purchaseValue: 3200, usefulLifeHours: 5000 },
+    { model: 'A1', powerWatts: 220, purchaseValue: 2200, usefulLifeHours: 4000 },
+    { model: 'A1 Mini', powerWatts: 160, purchaseValue: 1500, usefulLifeHours: 4000 },
+    { model: 'A1 Mini Combo', powerWatts: 200, purchaseValue: 2500, usefulLifeHours: 4000 },
+  ],
+  'Creality': [
+    { model: 'K1 Max', powerWatts: 1000, purchaseValue: 3200, usefulLifeHours: 4000 },
+    { model: 'K1C', powerWatts: 350, purchaseValue: 2200, usefulLifeHours: 4000 },
+    { model: 'K1', powerWatts: 350, purchaseValue: 1800, usefulLifeHours: 4000 },
+    { model: 'Ender-3 V3 KE', powerWatts: 350, purchaseValue: 1200, usefulLifeHours: 3000 },
+    { model: 'Ender-3 V3 SE', powerWatts: 270, purchaseValue: 800, usefulLifeHours: 3000 },
+    { model: 'Ender-3 S1 Pro', powerWatts: 350, purchaseValue: 1400, usefulLifeHours: 3000 },
+    { model: 'CR-10 Smart Pro', powerWatts: 400, purchaseValue: 2800, usefulLifeHours: 4000 },
+    { model: 'Sermoon V1 Pro', powerWatts: 350, purchaseValue: 2000, usefulLifeHours: 4000 },
+  ],
+  'Anycubic': [
+    { model: 'Kobra 3 Combo', powerWatts: 350, purchaseValue: 3500, usefulLifeHours: 4000 },
+    { model: 'Kobra 3', powerWatts: 300, purchaseValue: 2200, usefulLifeHours: 4000 },
+    { model: 'Kobra 2 Max', powerWatts: 350, purchaseValue: 2500, usefulLifeHours: 3500 },
+    { model: 'Kobra 2 Pro', powerWatts: 280, purchaseValue: 1600, usefulLifeHours: 3500 },
+    { model: 'Kobra 2', powerWatts: 270, purchaseValue: 1200, usefulLifeHours: 3000 },
+    { model: 'Kobra Max', powerWatts: 350, purchaseValue: 2000, usefulLifeHours: 3000 },
+  ],
+  'Flashforge': [
+    { model: 'Adventurer 5M Pro', powerWatts: 350, purchaseValue: 3000, usefulLifeHours: 4000 },
+    { model: 'Adventurer 5M', powerWatts: 350, purchaseValue: 2200, usefulLifeHours: 4000 },
+    { model: 'Creator 3 Pro', powerWatts: 800, purchaseValue: 7000, usefulLifeHours: 5000 },
+    { model: 'Guider 3 Plus', powerWatts: 600, purchaseValue: 8000, usefulLifeHours: 6000 },
+  ],
+  'Prusa': [
+    { model: 'MK4S', powerWatts: 240, purchaseValue: 4500, usefulLifeHours: 8000 },
+    { model: 'MK4', powerWatts: 240, purchaseValue: 3800, usefulLifeHours: 8000 },
+    { model: 'XL', powerWatts: 700, purchaseValue: 12000, usefulLifeHours: 8000 },
+    { model: 'MINI+', powerWatts: 180, purchaseValue: 2200, usefulLifeHours: 6000 },
+  ],
+  'Voron': [
+    { model: 'Trident 250', powerWatts: 400, purchaseValue: 4000, usefulLifeHours: 8000 },
+    { model: 'Trident 300', powerWatts: 500, purchaseValue: 5000, usefulLifeHours: 8000 },
+    { model: '2.4 R2 350', powerWatts: 600, purchaseValue: 6000, usefulLifeHours: 8000 },
+    { model: 'Switchwire', powerWatts: 350, purchaseValue: 3000, usefulLifeHours: 7000 },
+    { model: '0.2', powerWatts: 120, purchaseValue: 1500, usefulLifeHours: 6000 },
+  ],
+  'Artillery': [
+    { model: 'Sidewinder X4 Pro', powerWatts: 350, purchaseValue: 2000, usefulLifeHours: 3500 },
+    { model: 'Hornet', powerWatts: 200, purchaseValue: 900, usefulLifeHours: 3000 },
+    { model: 'Genius Pro', powerWatts: 220, purchaseValue: 1100, usefulLifeHours: 3000 },
+  ],
+  'Elegoo': [
+    { model: 'Neptune 4 Max', powerWatts: 350, purchaseValue: 2200, usefulLifeHours: 3500 },
+    { model: 'Neptune 4 Pro', powerWatts: 280, purchaseValue: 1500, usefulLifeHours: 3500 },
+    { model: 'Neptune 4', powerWatts: 270, purchaseValue: 1100, usefulLifeHours: 3000 },
+  ],
+  'Outra marca': [
+    { model: 'Personalizado', powerWatts: 300, purchaseValue: 2000, usefulLifeHours: 3000 },
+  ],
+}
+
+interface PrinterForm {
+  name: string
+  model: string
+  powerWatts: number
+  purchaseValue: number
+  usefulLifeHours: number
+  notes: string
+}
+
 // ─── Impressoras ──────────────────────────────────────────────────────────────
 function PrintersSettings() {
+  const qc = useQueryClient()
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState<any>(null)
+  const [selectedBrand, setSelectedBrand] = useState('')
+  const [selectedModel, setSelectedModel] = useState('')
+
   const { data: printers, isLoading } = useQuery({
     queryKey: ['printers'],
     queryFn: () => api.get<{ data: any[] }>('/printers').then(r => r.data.data || []),
   })
+
+  const form = useForm<PrinterForm>()
+
+  const openAdd = () => {
+    setEditing(null)
+    setSelectedBrand('')
+    setSelectedModel('')
+    form.reset({ name: '', model: '', powerWatts: 300, purchaseValue: 2000, usefulLifeHours: 4000, notes: '' })
+    setShowModal(true)
+  }
+
+  const openEdit = (p: any) => {
+    setEditing(p)
+    setSelectedBrand('')
+    setSelectedModel('')
+    form.reset({ name: p.name, model: p.model || '', powerWatts: p.powerWatts, purchaseValue: p.purchaseValue, usefulLifeHours: p.usefulLifeHours, notes: p.notes || '' })
+    setShowModal(true)
+  }
+
+  // Quando seleciona modelo, preenche os campos automaticamente
+  const handleModelSelect = (modelName: string) => {
+    setSelectedModel(modelName)
+    const specs = PRINTER_DB[selectedBrand]?.find(m => m.model === modelName)
+    if (specs) {
+      form.setValue('name', `${selectedBrand} ${specs.model}`)
+      form.setValue('model', specs.model)
+      form.setValue('powerWatts', specs.powerWatts)
+      form.setValue('purchaseValue', specs.purchaseValue)
+      form.setValue('usefulLifeHours', specs.usefulLifeHours)
+    }
+  }
+
+  const save = useMutation({
+    mutationFn: (data: PrinterForm) => editing
+      ? api.put(`/printers/${editing.id}`, data)
+      : api.post('/printers', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['printers'] })
+      toast.success(editing ? 'Impressora atualizada!' : 'Impressora cadastrada!')
+      setShowModal(false)
+    },
+    onError: (err: any) => toast.error(err.message || 'Erro ao salvar'),
+  })
+
+  const remove = useMutation({
+    mutationFn: (id: string) => api.delete(`/printers/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['printers'] }); toast.success('Impressora removida') },
+  })
+
   if (isLoading) return <div className="card"><div className="skeleton h-20 rounded" /></div>
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-text-primary">Impressoras cadastradas</h3>
-        <Button size="sm" icon={<Printer size={13} />}>Adicionar</Button>
+        <Button size="sm" icon={<Plus size={13} />} onClick={openAdd}>Adicionar</Button>
       </div>
+
       <div className="space-y-3">
         {(printers || []).map((p: any) => (
-          <div key={p.id} className="card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-text-primary">{p.name}</p>
-                {p.model && <p className="text-xs text-text-muted">{p.model}</p>}
-              </div>
-              <div className="text-right text-xs text-text-muted">
-                <p>{p.powerWatts}W · R${(p.purchaseValue / p.usefulLifeHours).toFixed(2)}/h depreciação</p>
-                <p>{p.totalHoursUsed}h de {p.usefulLifeHours}h usadas</p>
-              </div>
+          <div key={p.id} className="card flex items-center justify-between">
+            <div>
+              <p className="font-medium text-text-primary">{p.name}</p>
+              <p className="text-xs text-text-muted">{p.powerWatts}W · Depreciação R${(p.purchaseValue / p.usefulLifeHours).toFixed(2)}/h · {p.totalHoursUsed}h/{p.usefulLifeHours}h</p>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" onClick={() => openEdit(p)}>Editar</Button>
+              <button onClick={() => { if (confirm(`Remover ${p.name}?`)) remove.mutate(p.id) }} className="text-danger hover:text-danger/80 p-1.5 rounded hover:bg-danger/10 transition-colors">
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
         ))}
@@ -161,6 +290,77 @@ function PrintersSettings() {
           <p className="text-sm text-text-muted text-center py-8">Nenhuma impressora cadastrada</p>
         )}
       </div>
+
+      {/* Modal Adicionar/Editar Impressora */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowModal(false)} />
+          <div className="relative bg-bg-800 border border-border rounded-xl w-full max-w-lg p-6 shadow-2xl">
+            <h3 className="text-base font-semibold text-text-primary mb-4">
+              {editing ? 'Editar impressora' : 'Adicionar impressora'}
+            </h3>
+
+            {/* Seletor de marca/modelo (apenas ao adicionar) */}
+            {!editing && (
+              <div className="grid grid-cols-2 gap-3 mb-4 p-4 bg-bg-700 rounded-lg border border-border">
+                <div>
+                  <label className="text-xs font-medium text-text-muted mb-1 block">Selecionar marca</label>
+                  <select
+                    className="input-base text-sm"
+                    value={selectedBrand}
+                    onChange={e => { setSelectedBrand(e.target.value); setSelectedModel('') }}
+                  >
+                    <option value="">— Escolha a marca —</option>
+                    {Object.keys(PRINTER_DB).map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-text-muted mb-1 block">Selecionar modelo</label>
+                  <select
+                    className="input-base text-sm"
+                    value={selectedModel}
+                    onChange={e => handleModelSelect(e.target.value)}
+                    disabled={!selectedBrand}
+                  >
+                    <option value="">— Escolha o modelo —</option>
+                    {(PRINTER_DB[selectedBrand] || []).map(m => <option key={m.model} value={m.model}>{m.model}</option>)}
+                  </select>
+                </div>
+                {selectedModel && (
+                  <p className="col-span-2 text-xs text-cyan-400">✓ Dados preenchidos automaticamente — edite se necessário</p>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={form.handleSubmit(d => save.mutate(d))} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Input label="Nome da impressora" {...form.register('name', { required: true })} required />
+                </div>
+                <Input label="Modelo" {...form.register('model')} />
+                <Input label="Potência (W)" type="number" {...form.register('powerWatts', { valueAsNumber: true, required: true })} required />
+                <Input label="Valor de compra (R$)" type="number" step="0.01" {...form.register('purchaseValue', { valueAsNumber: true, required: true })} required />
+                <Input label="Vida útil (horas)" type="number" {...form.register('usefulLifeHours', { valueAsNumber: true, required: true })} required />
+                <div className="col-span-2">
+                  <label className="text-sm font-medium text-text-secondary block mb-1">Observações</label>
+                  <textarea
+                    {...form.register('notes')}
+                    rows={2}
+                    className="input-base w-full resize-none"
+                    placeholder="Informações adicionais..."
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>Cancelar</Button>
+                <Button type="submit" loading={save.isPending} icon={<Save size={14} />}>
+                  {editing ? 'Salvar alterações' : 'Cadastrar impressora'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
